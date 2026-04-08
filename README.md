@@ -22,7 +22,7 @@ go install github.com/s4na/tazuna@latest
 ```sh
 git clone https://github.com/s4na/tazuna.git
 cd tazuna
-go build -o tazuna .
+go build -o tmp/tazuna .
 ```
 
 ## 使い方
