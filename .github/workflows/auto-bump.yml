@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: auto-bump-main
+  cancel-in-progress: false
+
 jobs:
   bump-patch-version:
     if: github.event.pull_request.merged == true
@@ -41,7 +45,7 @@ jobs:
             echo "No VERSION change to commit"
             exit 0
           fi
-          # [skip ci] prevents recursive auto-bump runs on main
+          # [skip ci] prevents triggering other workflows on this bump commit
           git commit -m "chore: bump patch version to $(cat VERSION) [skip ci]"
           # Rebase in case main moved (concurrent merges)
           for i in 1 2 3; do

@@ -11,11 +11,12 @@ import (
 var versionString string
 
 func main() {
-	showVersion := flag.Bool("v", false, "show version")
-	flag.BoolVar(showVersion, "version", false, "show version")
+	var showVersion bool
+	flag.BoolVar(&showVersion, "v", false, "show version")
+	flag.BoolVar(&showVersion, "version", false, "show version (long form)")
 	flag.Parse()
 
-	if *showVersion {
+	if showVersion {
 		fmt.Println(strings.TrimSpace(versionString))
 		return
 	}
