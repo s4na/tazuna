@@ -47,10 +47,6 @@ jobs:
           fi
           # [skip ci] prevents triggering other workflows on this bump commit
           git commit -m "chore: bump patch version to $(cat VERSION) [skip ci]"
-          # Concurrency group serializes runs; retry up to 3 times for transient failures
-          for i in 1 2 3; do
-            git push origin main && exit 0
-            echo "push failed, retrying ($i)"
-            sleep 2
-          done
-          exit 1
+          # Serialization is handled by the top-level `concurrency: auto-bump-main`
+          # group, so a plain push is sufficient — no retry/rebase loop needed.
+          git push origin main
