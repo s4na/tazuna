@@ -2,17 +2,21 @@ package main
 
 import (
 	_ "embed"
+	"flag"
 	"fmt"
-	"os"
 	"strings"
 )
 
 //go:embed VERSION
-var version string
+var versionString string
 
 func main() {
-	if len(os.Args) >= 2 && (os.Args[1] == "-v" || os.Args[1] == "--version") {
-		fmt.Println(strings.TrimSpace(version))
+	showVersion := flag.Bool("v", false, "show version")
+	flag.BoolVar(showVersion, "version", false, "show version")
+	flag.Parse()
+
+	if *showVersion {
+		fmt.Println(strings.TrimSpace(versionString))
 		return
 	}
 	fmt.Println("hello world")

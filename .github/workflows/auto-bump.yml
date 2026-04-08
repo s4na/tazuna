@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  bump:
+  bump-patch-version:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
@@ -17,11 +17,14 @@ jobs:
         with:
           ref: main
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Bump patch version
         run: |
-          current=$(cat VERSION)
+          current=$(tr -d '[:space:]' < VERSION)
+          if ! [[ "$current" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid VERSION format: $current" >&2
+            exit 1
+          fi
           IFS='.' read -r major minor patch <<< "$current"
           patch=$((patch + 1))
           new="${major}.${minor}.${patch}"
@@ -33,5 +36,17 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add VERSION
+          # Guard against no-op commits (e.g. VERSION unchanged)
+          if git diff --cached --quiet; then
+            echo "No VERSION change to commit"
+            exit 0
+          fi
+          # [skip ci] prevents recursive auto-bump runs on main
           git commit -m "chore: bump patch version to $(cat VERSION) [skip ci]"
-          git push origin main
+          # Rebase in case main moved (concurrent merges)
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push origin main && exit 0
+            echo "push failed, retrying ($i)"
+            sleep 2
+          done
+          exit 1
